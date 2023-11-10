@@ -1,7 +1,9 @@
 [package]
 name = "raw-printer"
-description = "Direct RAW printing windows and linux"
-version = "0.1.1"
+description = "Direct RAW printing on windows or linux"
+repository = "https://github.com/mushonnip/raw-printer"
+keywords = ["printer"]
+version = "0.1.2"
 edition = "2021"
 license = "MIT"
 
