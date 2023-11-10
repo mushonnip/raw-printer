@@ -14,4 +14,4 @@ let _ = raw_printer::write_to_device("/dev/usb/lp0", "^FDhello world");
 
 ## License
 
-[Unlicence](https://unlicense.org/)
+[MIT](https://github.com/aws/mit-0)
