@@ -6,7 +6,9 @@
 ### Basic example
 
 ```rust
-let _ = raw_printer::write_to_device("/dev/usb/lp0", "^FDhello world");
+let bytes_written = raw_printer::write_to_device("/dev/usb/lp0", "^FDhello world");
+
+println!("wrote {} bytes", bytes_written);
 
 ```
 

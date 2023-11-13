@@ -17,8 +17,25 @@ mod tests {
     }
 }
 
+/// # Platform-specific Behavior
+///
+/// This function returns a result containing the size of bytes written on success or an error.
+///
+/// - On Linux and Windows, the result type is `Result<usize, Error>`.
+/// - Note: On Windows, the original bytes written are u32 but cast to usize.
+///
+/// # Examples
+///
+/// ```
+/// let zpl = "^FDhello world";
+/// let printer = "/dev/usb/lp0";
+/// let result = raw_printer::write_to_device(printer, zpl);
+/// 
+/// assert!(result.is_ok());
+/// 
+/// ```
 #[cfg(target_os = "linux")]
-pub fn write_to_device(printer: &str, payload: &str) -> Result<(), std::io::Error> {
+pub fn write_to_device(printer: &str, payload: &str) -> Result<usize, std::io::Error> {
     use std::fs::OpenOptions;
     use std::io::Write;
 
@@ -26,18 +43,15 @@ pub fn write_to_device(printer: &str, payload: &str) -> Result<(), std::io::Erro
 
     match device_path {
         Ok(mut device) => {
-            let _ = device.write(payload.as_bytes())?;
-            Ok(())
+            let bytes_written = device.write(payload.as_bytes())?;
+            Ok(bytes_written)
         }
-        Err(_) => Err(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "Failed to open device",
-        )),
+        Err(e) => Err(std::io::Error::new(std::io::ErrorKind::Other, e)),
     }
 }
 
 #[cfg(target_os = "windows")]
-pub fn write_to_device(printer: &str, payload: &str) -> Result<(), std::io::Error> {
+pub fn write_to_device(printer: &str, payload: &str) -> Result<usize, std::io::Error> {
     use std::ffi::CString;
     use std::ptr;
     use windows::Win32::Foundation::HANDLE;
@@ -99,10 +113,9 @@ pub fn write_to_device(printer: &str, payload: &str) -> Result<(), std::io::Erro
             EndPagePrinter(printer_handle);
             EndDocPrinter(printer_handle);
             let _ = ClosePrinter(printer_handle);
+            return Ok(bytes_written as usize);
         } else {
             return Err(std::io::Error::from(windows::core::Error::from_win32()));
         }
     }
-
-    Ok(())
 }
