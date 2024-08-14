@@ -61,7 +61,7 @@ pub fn write_to_device(printer: &str, payload: &str) -> Result<usize, std::io::E
     };
 
     let printer_name = CString::new(printer).unwrap_or_default(); // null-terminated string
-    let mut printer_handle: HANDLE = HANDLE(0);
+    let mut printer_handle: HANDLE = HANDLE(std::ptr::null_mut());
 
     // Open the printer
     unsafe {
@@ -110,8 +110,8 @@ pub fn write_to_device(printer: &str, payload: &str) -> Result<usize, std::io::E
             }
 
             // End the page and document
-            EndPagePrinter(printer_handle);
-            EndDocPrinter(printer_handle);
+            let _ = EndPagePrinter(printer_handle);
+            let _ = EndDocPrinter(printer_handle);
             let _ = ClosePrinter(printer_handle);
             return Ok(bytes_written as usize);
         } else {
