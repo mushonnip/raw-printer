@@ -35,7 +35,7 @@ mod tests {
 /// 
 /// ```
 #[cfg(target_os = "linux")]
-pub fn write_to_device(printer: &str, payload: &str, document_name: Option<&str>) -> Result<usize, std::io::Error> {
+pub fn write_to_device(printer: &str, payload: &str, _document_name: Option<&str>) -> Result<usize, std::io::Error> {
     use std::fs::OpenOptions;
     use std::io::Write;
 
