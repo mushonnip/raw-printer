@@ -5,14 +5,14 @@ mod tests {
     #[test]
     #[cfg(target_os = "linux")]
     fn test_write_to_device_linux() {
-        let result = write_to_device("/dev/usb/lp0", "^FDhello world");
+        let result = write_to_device("/dev/usb/lp0", "^FDhello world", Some("Test Document"));
         assert!(result.is_ok());
     }
 
     #[test]
     #[cfg(target_os = "windows")]
     fn test_write_to_device_windows() {
-        let result = write_to_device("ZDesigner ZD220-203dpi ZPL", "^FDhello world");
+        let result = write_to_device("ZDesigner ZD220-203dpi ZPL", "^FDhello world", Some("Test Document"));
         assert!(result.is_ok());
     }
 }
@@ -29,13 +29,13 @@ mod tests {
 /// ```
 /// let zpl = "^FDhello world";
 /// let printer = "/dev/usb/lp0";
-/// let result = raw_printer::write_to_device(printer, zpl);
+/// let result = raw_printer::write_to_device(printer, zpl, Some("My Custom Document"));
 /// 
 /// assert!(result.is_ok());
 /// 
 /// ```
 #[cfg(target_os = "linux")]
-pub fn write_to_device(printer: &str, payload: &str) -> Result<usize, std::io::Error> {
+pub fn write_to_device(printer: &str, payload: &str, document_name: Option<&str>) -> Result<usize, std::io::Error> {
     use std::fs::OpenOptions;
     use std::io::Write;
 
@@ -51,7 +51,7 @@ pub fn write_to_device(printer: &str, payload: &str) -> Result<usize, std::io::E
 }
 
 #[cfg(target_os = "windows")]
-pub fn write_to_device(printer: &str, payload: &str) -> Result<usize, std::io::Error> {
+pub fn write_to_device(printer: &str, payload: &str, document_name: Option<&str>) -> Result<usize, std::io::Error> {
     use std::ffi::CString;
     use std::ptr;
     use windows::Win32::Foundation::HANDLE;
@@ -78,8 +78,11 @@ pub fn write_to_device(printer: &str, payload: &str) -> Result<usize, std::io::E
         )
         .is_ok()
         {
+            let doc_name = document_name.unwrap_or("Print Job");
+            let doc_name_cstring = CString::new(doc_name).unwrap_or_default();
+            
             let doc_info = DOC_INFO_1A {
-                pDocName: windows::core::PSTR("My Document\0".as_ptr() as *mut u8),
+                pDocName: windows::core::PSTR(doc_name_cstring.as_ptr() as *mut u8),
                 pOutputFile: windows::core::PSTR::null(),
                 pDatatype: windows::core::PSTR("RAW\0".as_ptr() as *mut u8),
             };
