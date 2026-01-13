@@ -8,16 +8,17 @@ mod tests {
     #[test]
     #[cfg(target_os = "linux")]
     fn test_write_to_device_linux() {
-        let result = write_to_device("/dev/usb/lp0", "^FDhello world", Some("Test Document"));
+        let payload = b"^FDhello world";
+        let result = write_to_device("/dev/usb/lp0", payload, Some("Test Document"));
         assert!(result.is_ok());
     }
 
     #[test]
     #[cfg(target_os = "windows")]
     fn test_write_to_device_windows() {
-        let result = write_to_device(
-            "ZDesigner ZD220-203dpi ZPL",
-            "^FDhello world",
+        let payload = b"^FDhello world";
+        let result = write_to_device("ZDesigner ZD220-203dpi ZPL",
+            payload,
             Some("Test Document"),
         );
         assert!(result.is_ok());
@@ -44,14 +45,14 @@ mod tests {
 #[cfg(target_os = "linux")]
 pub fn write_to_device(
     printer: &str,
-    payload: &str,
+    payload: &[u8],
     _document_name: Option<&str>,
 ) -> Result<usize, std::io::Error> {
     use std::fs::OpenOptions;
     use std::io::Write;
 
     let mut device = OpenOptions::new().write(true).open(printer)?;
-    let bytes_written = device.write(payload.as_bytes())?;
+    let bytes_written = device.write(payload)?;
     device.flush()?; // Ensure data is written
     Ok(bytes_written)
 }
@@ -59,7 +60,7 @@ pub fn write_to_device(
 #[cfg(target_os = "windows")]
 pub fn write_to_device(
     printer: &str,
-    payload: &str,
+    payload: &[u8],
     document_name: Option<&str>,
 ) -> Result<usize, std::io::Error> {
     use std::ffi::CString;
@@ -129,7 +130,7 @@ pub fn write_to_device(
             ));
         }
 
-        let buffer = payload.as_bytes();
+        let buffer = payload;
         let mut bytes_written: u32 = 0;
 
         let write_result = WritePrinter(

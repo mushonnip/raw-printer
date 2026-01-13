@@ -3,7 +3,7 @@ name = "raw-printer"
 description = "Direct RAW printing on windows or linux"
 repository = "https://github.com/mushonnip/raw-printer"
 keywords = ["printer"]
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 license = "MIT"
 
